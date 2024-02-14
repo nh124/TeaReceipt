@@ -1,75 +1,46 @@
-const {
-  authRepo,
-} = require("../Database/repositoories/Authentication-repository");
-const bcrypt = require("bcrypt");
-const generateAccessToken = require("../Utils/GenerateJWTToken");
+import authRepo from "../repositories/Authentication-repository.js";
+import bcrypt from "bcrypt";
 class AuthService {
   constructor() {
     this.authRepository = new authRepo();
   }
-  async userExists(data) {
-    try {
-      const result = await this.authRepository.searchUser(data);
-      return result;
-    } catch (error) {
-      console.error("Error checking user existence:", error);
-      return null;
-    }
-  }
-
   async signup(data) {
     try {
-      const userExists = await this.userExists(data.email);
-      if (userExists.length > 0) {
-        return {
-          success: false,
-          message: "User with this email already exists",
-          statusCode: 400,
-        };
+      function generateUserName() {
+        const randomFourDigitNumber = Math.floor(1000 + Math.random() * 9000);
+        return `user${randomFourDigitNumber}`;
       }
-      this.authRepository.createUser(data);
-      return {
-        success: true,
-        message: "User created successfully",
-        statusCode: 201,
-      };
-    } catch (error) {
-      console.error("Error creating user:", error);
-      return { statusCode: 400, message: "Failed to create user" };
+      function hashPassword(password) {
+        const saltRounds = 10;
+        return bcrypt.hashSync(password, saltRounds);
+      }
+      if (data.email === "" || data.password === "") {
+        const error = errorHandler("Invalid email or password", 404);
+        throw error;
+      }
+      const response = await this.authRepository.createUser(
+        data,
+        generateUserName,
+        hashPassword
+      );
+      console.log(response);
+      return response;
+    } catch (err) {
+      return err;
     }
   }
 
   async signin(data) {
-    const { email } = data;
-    const { password } = data;
+    const response = await this.authRepository.signin(data);
+    console.log(response);
+    return response;
+  }
 
-    try {
-      const userExists = await this.userExists(email);
-      if (!userExists) {
-        return {
-          success: false,
-          message: "User not found",
-        };
-      }
-      const storedHashedPassword = userExists[0].password;
-      const passwordMatch = bcrypt.compareSync(password, storedHashedPassword);
-      if (passwordMatch) {
-        const accessToken = generateAccessToken(userExists);
-        return {
-          statusCode: 200,
-          message: "User authenticated successfully",
-          accessToken: accessToken,
-        };
-      } else {
-        return { statusCode: 400, message: "Incorrect password" };
-      }
-    } catch (error) {
-      console.error("Error creating user:", error);
-      return { statusCode: 400, message: "Failed to create user" };
-    }
+  async passwordRecovery(data) {
+    const response = await this.authRepository.resetPassword(data);
+    console.log(response);
+    return response;
   }
 }
 
-module.exports = {
-  AuthService,
-};
+export default AuthService;

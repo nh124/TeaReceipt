@@ -1,46 +1,56 @@
-const { postRepository } = require("../Database/repositoories/post-repository");
+import postRepository from "../repositories/postRepository.js";
 class PostService {
   constructor() {
     this.postRepository = new postRepository();
   }
-  async createPost(data) {
+  async CreatePost(data) {
     try {
-      this.postRepository.createPost(data);
-      return {
-        success: true,
-        message: "Post created successfully",
-        statusCode: 200,
-      };
-    } catch (err) {
-      console.error("Error creating user:", error);
-      return {
-        success: false,
-        message: "Error getting post",
-        statusCode: 400,
-      };
+      if (
+        data.phone === "" ||
+        data.city === "" ||
+        data.captions === "" ||
+        data.name === ""
+      ) {
+        const error = errorHandler("Invalid email or password", 404);
+        throw error;
+      }
+
+      const response = this.postRepository.CreatePost(data);
+      return response;
+    } catch (error) {
+      return error;
     }
   }
-  async getPosts() {
+  async DeletePost(id) {
     try {
-      const results = await this.postRepository.getPosts();
-      console.log({ results: results });
-      return {
-        success: true,
-        message: "get Post successful",
-        statusCode: 200,
-        results: results,
-      };
-    } catch (err) {
-      console.error("Error creating user:", err);
-      return {
-        success: true,
-        message: "Post was not created successfully",
-        statusCode: 400,
-      };
+      if (id < 0) {
+        const error = errorHandler("Invalid ID", 404);
+        throw error;
+      }
+      const response = await this.postRepository.DeletePost(id);
+      console.log(`response: ${response}`);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async GetAllPosts() {
+    try {
+      const response = await this.postRepository.GetAllPosts();
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+  async getPostByCurrentUser(id) {
+    try {
+      const response = await this.postRepository.GetPostsByUser(id);
+      return response;
+    } catch (error) {
+      return error;
     }
   }
 }
 
-module.exports = {
-  PostService,
-};
+export default PostService;

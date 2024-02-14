@@ -1,4 +1,4 @@
-const dotEnv = require("dotenv");
+import dotEnv from "dotenv";
 
 if (process.env.NODE_ENV === "production") {
   const configFile = `./.env.${process.env.NODE_ENV}`;
@@ -7,12 +7,6 @@ if (process.env.NODE_ENV === "production") {
   dotEnv.config();
 }
 
-module.exports = {
-  PORT: process.env.PORT,
-  HOST: process.env.HOST,
-  USER: process.env.USER,
-  PASSWORD: process.env.PASSWORD,
-  DATABASE: process.env.DATABASE,
-  ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,
-  REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
-};
+export const PORT = process.env.PORT;
+export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
+export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;

@@ -1,17 +1,17 @@
-const jwt = require("jsonwebtoken");
-const { ACCESS_TOKEN_SECRET } = require("../Config/index");
+import jwt from "jsonwebtoken";
+import { ACCESS_TOKEN_SECRET } from "../Config/index.js";
 
 const generateAccessToken = (userData) => {
   const user = {
-    id: userData[0].id,
-    name: userData[0].name,
-    email: userData[0].email,
-    username: userData[0].username,
-    password: userData[0].password,
+    id: userData.id,
+    name: userData.name,
+    email: userData.email,
+    username: userData.username,
+    password: userData.password,
   };
   console.log(user);
   const accessToken = jwt.sign(user, ACCESS_TOKEN_SECRET);
   return accessToken;
 };
 
-module.exports = generateAccessToken;
+export default generateAccessToken;

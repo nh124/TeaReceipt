@@ -1,36 +1,81 @@
-const express = require("express");
-const { PostService } = require("../Services/PostService");
-const authenticateToken = require("../middleware/authnticateToken");
-const router = express.Router();
+import express from "express";
+import PostService from "../Services/PostService.js";
+import authenticateToken from "../middleware/authnticateToken.js";
+import { upload } from "../middleware/upload.js";
+const postRouter = express();
 
 const service = new PostService();
-router.post("/createPost", authenticateToken, async (req, res, next) => {
+
+postRouter.post(
+  "/createPost",
+  authenticateToken,
+  upload.array("images", 5),
+  async (req, res, next) => {
+    try {
+      const { phone_number, city, caption, name } = req.body;
+      const images = req.files.map((file) => file.path);
+      const data = {
+        phone_number: phone_number,
+        city: city,
+        caption: caption,
+        userId: req.user.id,
+        name: name,
+        images: images,
+      };
+      console.log(data);
+      const response = await service.CreatePost(data);
+      console.log(response);
+      return res.json(response);
+    } catch (err) {
+      res
+        .status(err.statusCode || 500)
+        .json({ status: "fail", message: err.message });
+    }
+  }
+);
+
+postRouter.delete(
+  "/deletePost/:id",
+  authenticateToken,
+  async (req, res, next) => {
+    try {
+      const id = req.params.id;
+      const response = await service.DeletePost(id);
+      console.log(response);
+      return res.json(response);
+    } catch (err) {
+      res
+        .status(err.statusCode || 500)
+        .json({ status: "fail", message: err.message });
+    }
+  }
+);
+
+postRouter.get("/getAllPosts", authenticateToken, async (req, res, next) => {
   try {
-    const { name, phone_number, city, caption } = req.body;
-    const data = {
-      user_id: req.user.id,
-      name: name,
-      phone_number: phone_number,
-      city: city,
-      caption: caption,
-    };
-    const response = await service.createPost(data);
-    if (response.status === 400) return res.status(400).send(response);
-    return res.status(200).send(response);
+    const response = await service.GetAllPosts();
+    return res.json(response);
   } catch (err) {
-    console.log(req.body, res.body);
-    next(err);
+    res
+      .status(err.statusCode || 500)
+      .json({ status: "fail", message: err.message });
   }
 });
 
-router.get("/getPost", authenticateToken, async (req, res, next) => {
-  try {
-    const response = await service.getPosts();
-    if (response.status === 400) return res.status(400).send(response);
-    return res.status(200).send(response);
-  } catch (err) {
-    console.log(req.body, res.body);
-    next(err);
+postRouter.get(
+  "/getAllPosts/:id",
+  authenticateToken,
+  async (req, res, next) => {
+    const id = req.params.id;
+    try {
+      const response = await service.getPostByCurrentUser(id);
+      return res.json(response);
+    } catch (err) {
+      res
+        .status(err.statusCode || 500)
+        .json({ status: "fail", message: err.message });
+    }
   }
-});
-module.exports = router;
+);
+
+export default postRouter;

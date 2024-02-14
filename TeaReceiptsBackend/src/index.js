@@ -1,25 +1,27 @@
-const express = require("express");
-const { createCommentTable } = require("./Database/models/comment");
-const { createUserTable } = require("./Database/models/user");
-const { createPostTable } = require("./Database/models/post");
-const authRouter = require("./API/authRouter");
-const postRouter = require("./API/postRouter");
-const bodyParser = require("body-parser");
+import express from "express";
+import authRouter from "./API/authRouter.js";
+import postRouter from "./API/postRouter.js";
+import bodyParser from "body-parser";
 
-const app = express();
 const PORT = process.env.PORT || 8000;
+
 const StartServer = async () => {
   const app = express();
-  // make sure to update the models based on the SQL Schema
-  // createCommentTable();
-  // createUserTable();
-  // createPostTable();
   app.use(bodyParser.json());
   app.use(express.json());
-  console.log(PORT);
 
   app.use("/auth", authRouter);
   app.use("/post", postRouter);
+
+  app.use((error, req, res, next) => {
+    error.statusCode = error.statusCode || 500;
+    error.status = error.status || "error";
+    res.status(error.statusCode).json({
+      status: error.statusCode,
+      message: error.message,
+    });
+  });
+
   app
     .listen(PORT, () => {
       console.log(`listening to port ${PORT}`);
