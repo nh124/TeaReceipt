@@ -1,4 +1,4 @@
-import commentRepository from "../repositories/commentRepository.js";
+import commentRepository from "../repositories/CommentRepository.js";
 class CommentService {
   commentRepository;
   constructor() {
