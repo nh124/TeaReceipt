@@ -14,6 +14,9 @@ const StartServer = async () => {
   app.use("/auth", authRouter);
   app.use("/post", postRouter);
   app.use("/comment", commentRouter);
+  app.get("/health", (request,response)=>{
+    response.status(200).send(`server is live on ${PORT}`)
+  });
 
   app.use((error, req, res, next) => {
     error.statusCode = error.statusCode || 500;
